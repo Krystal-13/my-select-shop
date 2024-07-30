@@ -16,7 +16,7 @@
 <body>
 <div id="login-form">
   <div id="login-title">Log into Select Shop</div>
-  <br>
+  <button id="login-kakao-btn">카카오로 로그인하기</button>
   <button id="login-id-btn" onclick="location.href='/api/user/signup'">
     회원 가입하기
   </button>
@@ -74,4 +74,13 @@
             });
   }
 </script>
+<script>
+  document.getElementById('login-kakao-btn').addEventListener('click', function() {
+    fetch('/api/user/kakao/login')
+            .then(response => response.text())
+            .then(url => window.location.href = url)
+            .catch(error => console.error('Error:', error));
+  });
+</script>
+
 </html>
