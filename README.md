@@ -1,7 +1,5 @@
 ## Spring Project - My Select Shop
 
----
-
 - @ControllerAdvice 적용  
 - @ExceptionHandler 적용  
 - Spring AOP 적용  
