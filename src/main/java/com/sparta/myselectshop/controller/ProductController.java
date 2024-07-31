@@ -3,6 +3,9 @@ package com.sparta.myselectshop.controller;
 import com.sparta.myselectshop.dto.ProductMypriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
+import com.sparta.myselectshop.entity.ApiUseTime;
+import com.sparta.myselectshop.entity.User;
+import com.sparta.myselectshop.repository.ApiUseTimeRepository;
 import com.sparta.myselectshop.security.UserDetailsImpl;
 import com.sparta.myselectshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +19,30 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final ApiUseTimeRepository apiUseTimeRepository;
     @PostMapping("/products")
-    public ProductResponseDto createProduct(@RequestBody ProductRequestDto requestDto,
-                                            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
-        return productService.createProduct(requestDto, userDetails.getUser());
+    public ProductResponseDto createProduct(@RequestBody ProductRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            return productService.createProduct(requestDto, userDetails.getUser());
+        } finally {
+            long endTime = System.currentTimeMillis();
+            long runTime = endTime - startTime;
+
+            User loginUser = userDetails.getUser();
+
+            ApiUseTime apiUseTime = apiUseTimeRepository.findByUser(loginUser)
+                    .orElse(null);
+            if (apiUseTime == null) {
+                apiUseTime = new ApiUseTime(loginUser, runTime);
+            } else {
+                apiUseTime.addUseTime(runTime);
+            }
+
+            System.out.println("[API Use Time] Username: " + loginUser.getUsername() + ", Total Time: " + apiUseTime.getTotalTime() + " ms");
+            apiUseTimeRepository.save(apiUseTime);
+        }
     }
 
     @PutMapping("/products/{id}")
